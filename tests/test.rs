@@ -2138,3 +2138,8 @@ fn test_string_ref() {
     // second sheet is the same with a cell reference to the first sheet
     range_eq!(xlsx.worksheet_range_at(1).unwrap().unwrap(), expected_range);
 }
+
+#[test]
+fn test_high_byte_strings() {
+    let _: Xls<_> = wb("high_byte_string.xls");
+}
