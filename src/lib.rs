@@ -471,13 +471,10 @@ impl<T: CellType> Range<T> {
     /// Coordinate list (COO) is the natural way cells are stored
     /// Inner size is defined only by non empty.
     ///
-    /// cells: `Vec` of non empty `Cell`s, sorted by row
-    ///
-    /// # Panics
-    ///
-    /// panics when a `Cell` row is lower than the first `Cell` row or
-    /// bigger than the last `Cell` row.
-    pub fn from_sparse(cells: Vec<Cell<T>>) -> Range<T> {
+    /// cells: `Vec` of non empty `Cell`s
+    pub fn from_sparse(mut cells: Vec<Cell<T>>) -> Range<T> {
+        // cells do not always appear in (row, col) order
+        cells.sort_by_key(|cell| (cell.pos.0, cell.pos.1));
         if cells.is_empty() {
             Range::empty()
         } else {
@@ -487,12 +484,8 @@ impl<T: CellType> Range<T> {
             let mut col_start = u32::MAX;
             let mut col_end = 0;
             for c in cells.iter().map(|c| c.pos.1) {
-                if c < col_start {
-                    col_start = c;
-                }
-                if c > col_end {
-                    col_end = c
-                }
+                col_start = min(col_start, c);
+                col_end = max(col_end, c);
             }
             let cols = (col_end - col_start + 1) as usize;
             let rows = (row_end - row_start + 1) as usize;
