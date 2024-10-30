@@ -475,12 +475,12 @@ impl<T: CellType> Range<T> {
     pub fn from_sparse(mut cells: Vec<Cell<T>>) -> Range<T> {
         // cells do not always appear in (row, col) order
         cells.sort_by_key(|cell| (cell.pos.0, cell.pos.1));
-        if cells.is_empty() {
-            Range::empty()
-        } else {
+        let (row_start, row_end) = match &cells[..] {
+            [] => return Range::empty(),
+            [first] => (first.pos.0, first.pos.0),
+            [first, .., last] => (first.pos.0, last.pos.0),
+        };
             // search bounds
-            let row_start = cells.first().unwrap().pos.0;
-            let row_end = cells.last().unwrap().pos.0;
             let mut col_start = u32::MAX;
             let mut col_end = 0;
             for c in cells.iter().map(|c| c.pos.1) {
@@ -505,7 +505,6 @@ impl<T: CellType> Range<T> {
                 end: (row_end, col_end),
                 inner: v,
             }
-        }
     }
 
     /// Set inner value from absolute position
